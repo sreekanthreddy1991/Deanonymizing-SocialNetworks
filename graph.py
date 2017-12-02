@@ -51,7 +51,7 @@ def pick_combination(node_set, start_range, end_range, picked_combinations):
     if(len(picked_combinations)==0):
         present = False
     if(present or edge_combination is None):
-        pick_combination(node_set, start_range, end_range, picked_combinations)
+        return pick_combination(node_set, start_range, end_range, picked_combinations)
     else:
         return edge_combination
 print(target_nodes_degree)
@@ -83,18 +83,30 @@ print(nx.info(g))
 # print(new_node_degree)
 # print(new_node_edges)
 extra_target_nodes = []
+def adding_extra_edges_to_new_nodes(numEdges, end_range, target_nodes, extra_nodes):
+    node_list = []
+    add = True
+    count = 0
+    while(add):
+        extra_node = randint(0, end_range)
+        if ((extra_node in target_nodes) or (extra_node in extra_target_nodes)):
+            continue
+        else:
+            node_list.append(extra_node)
+            count = count+1
+        if(count == numEdges): add = False
+    return node_list
+
 for new_node in new_node_degree_counter:
     if(new_node_degree_counter[new_node] > 0):
-        while(new_node_degree_counter[new_node] > 0):
-            extra_node = randint(0, g_len)
-            if((extra_node in target_nodes) or (extra_node in extra_target_nodes)):
-                continue
-            else:
-                g.add_edge(extra_node, new_node)
-                new_node_degree_counter[new_node] = new_node_degree_counter[new_node]-1
-                extra_target_nodes.append(extra_node)
+        node_list = adding_extra_edges_to_new_nodes(new_node_degree_counter[new_node], g_len, target_nodes, extra_target_nodes)
+        extra_target_nodes.extend(node_list)
+        for node in node_list:
+            g.add_edge(node, new_node)
+            new_node_degree_counter[new_node] = new_node_degree_counter[new_node] - 1
 
 
-# for me in new_node_degree:
-#     if(new_node_degree[me] != len(new_node_edges[me])):
-#         print("not equal buddy")
+
+for me in new_node_degree:
+    if(new_node_degree[me] != len(new_node_edges[me])):
+        print("not equal buddy")
