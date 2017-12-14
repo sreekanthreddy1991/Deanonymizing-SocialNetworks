@@ -4,18 +4,25 @@ import random
 from random import randint
 fh = open("D:\Studies\Advanced Algorithm\project\dataset\com-lj.ungraph.txt", "r")
 path = "D:\Studies\Advanced Algorithm\project\dataset\com-lj.ungraph.txt"
-path2 = "cebook_combined.txt"
-g = nx.read_edgelist(path2,comments="#" ,create_using=nx.Graph(), nodetype=int)
-# print(nx.info(g))
+path2 = "facebook_combined.txt"
+path3 = "com-dblp.ungraph.txt"
+g = nx.read_edgelist(path3,comments="#" ,create_using=nx.Graph(), nodetype=int)
+print(nx.info(g))
 new_nodes_length = math.log(len(g), 2)
 new_nodes_length = math.ceil(new_nodes_length*2.2)
 new_nodes = []
 g_len = len(g)
+print("new length", new_nodes_length)
 # print(new_nodes)
 for num in range(0, new_nodes_length):
     new_node = g_len+num
+    # print(new_node)
     g.add_node(new_node)
     new_nodes.append(new_node)
+print(nx.info(g))
+# print(new_nodes_length, len(new_nodes))
+for i in new_nodes:
+    print(g.has_node(i))
 target_node_length = new_nodes_length
 target_nodes = []
 while(len(target_nodes)<target_node_length):
@@ -54,11 +61,10 @@ def pick_combination(node_set, start_range, end_range, picked_combinations):
         return pick_combination(node_set, start_range, end_range, picked_combinations)
     else:
         return edge_combination
-print(target_nodes_degree)
+# print(target_nodes_degree)
 new_node_edges = {}
 new_node_degree_counter = new_node_degree.copy()
 nodes_to_pick_from = new_nodes[:]
-print(nx.info(g))
 count = 0
 for target in target_nodes:
     edge_combination = pick_combination(nodes_to_pick_from, 0, target_nodes_degree[target], picked_combinations)
@@ -77,8 +83,7 @@ for target in target_nodes:
             edges = new_node_edges[mem]
         edges.append(target)
         new_node_edges[mem] = edges
-print(count)
-print(nx.info(g))
+# print(count)
 # print(target_nodes_edges)
 # print(new_node_degree)
 # print(new_node_edges)
@@ -89,7 +94,7 @@ def adding_extra_edges_to_new_nodes(numEdges, end_range, target_nodes, extra_nod
     count = 0
     while(add):
         extra_node = randint(0, end_range)
-        if ((extra_node in target_nodes) or (extra_node in extra_target_nodes)):
+        if ((extra_node in target_nodes) or (extra_node in extra_nodes)):
             continue
         else:
             node_list.append(extra_node)
@@ -105,8 +110,26 @@ for new_node in new_node_degree_counter:
             g.add_edge(node, new_node)
             new_node_degree_counter[new_node] = new_node_degree_counter[new_node] - 1
 
+# adding sequence edges to new nodes
+node_count = 0
+new_node_internal_degree = {}
+print(new_nodes_length)
+for node in new_nodes:
+    if(node_count < new_nodes_length-1):
+        g.add_edge(node, node+1);
+        if(node in new_node_internal_degree):
+            new_node_internal_degree[node] = new_node_internal_degree[node]+1
+        else:
+            new_node_internal_degree[node] = 1
+    for num in range(node+2, new_nodes[-1]):
+        if(node_count<new_nodes_length-2):
+            is_random_edge = randint(0,1)
+            if(is_random_edge==1):
+                g.add_edge(node, num)
+                new_node_internal_degree[node] = new_node_internal_degree[node] + 1
+    node_count = node_count+1
+
+# print(len(new_node_internal_degree))
+# print(new_node_internal_degree)
 
 
-for me in new_node_degree:
-    if(new_node_degree[me] != len(new_node_edges[me])):
-        print("not equal buddy")
