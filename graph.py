@@ -6,23 +6,20 @@ fh = open("D:\Studies\Advanced Algorithm\project\dataset\com-lj.ungraph.txt", "r
 path = "D:\Studies\Advanced Algorithm\project\dataset\com-lj.ungraph.txt"
 path2 = "facebook_combined.txt"
 path3 = "com-dblp.ungraph.txt"
-g = nx.read_edgelist(path3,comments="#" ,create_using=nx.Graph(), nodetype=int)
-print(nx.info(g))
+g = nx.read_edgelist(path2,comments="#" ,create_using=nx.Graph(), nodetype=int)
+# print(nx.info(g))
 new_nodes_length = math.log(len(g), 2)
 new_nodes_length = math.ceil(new_nodes_length*2.2)
 new_nodes = []
 g_len = len(g)
-print("new length", new_nodes_length)
 # print(new_nodes)
 for num in range(0, new_nodes_length):
     new_node = g_len+num
     # print(new_node)
     g.add_node(new_node)
     new_nodes.append(new_node)
-print(nx.info(g))
+# print(nx.info(g))
 # print(new_nodes_length, len(new_nodes))
-for i in new_nodes:
-    print(g.has_node(i))
 target_node_length = new_nodes_length
 target_nodes = []
 while(len(target_nodes)<target_node_length):
@@ -113,7 +110,6 @@ for new_node in new_node_degree_counter:
 # adding sequence edges to new nodes
 node_count = 0
 new_node_internal_degree = {}
-print(new_nodes_length)
 for node in new_nodes:
     if(node_count < new_nodes_length-1):
         g.add_edge(node, node+1);
@@ -129,7 +125,81 @@ for node in new_nodes:
                 new_node_internal_degree[node] = new_node_internal_degree[node] + 1
     node_count = node_count+1
 
+# new_node_overall_degree = {};
+# for node in new_nodes:
+#     if((node in new_node_internal_degree) and (node in new_node_degree)):
+#         new_node_overall_degree[node] = new_node_internal_degree[node] +  new_node_degree[node]
+#     else:
+#         new_node_overall_degree[node] = new_node_degree[node]
+
 # print(len(new_node_internal_degree))
 # print(new_node_internal_degree)
+
+
+# init map1 : node -> children and map2 : node -> parent
+
+
+
+def is_child(cand, leaf, j):
+    while (j>0):
+        if (g.has_edge(leaf, cand) != g.has_edge(new_nodes[j-1], cand)):
+            return False
+        j = j - 1
+        leaf = parent_map[leaf]
+    return True
+
+def get_all_nodes_of_a_degree(d):
+    node_list_with_same_degree = []
+    for node in g.nodes(data=False):
+        if(g.degree[node] == d):
+            node_list_with_same_degree.append(node)
+    return node_list_with_same_degree
+
+children_map = {}
+parent_map = {}
+
+i = 0
+leaves = [-1]
+#dummy node -1 -> {} and -1 to -1
+parent_map[-1] = -1
+last_node = -1
+print(nx.info(g))
+while (i < new_nodes_length) :
+    candidates = get_all_nodes_of_a_degree(g.degree[new_nodes[i]])
+    for leaf in leaves :
+        for c in candidates :
+            if(i==new_nodes_length-1):
+                last_node = c
+            if(i == 0 or (g.has_edge(c, leaf) and (i == new_nodes_length-1 or g.has_edge(c, c+1)))):
+                if(leaf in children_map):
+                    child_list = children_map[leaf]
+                    if(c > leaf):
+                        child_list.append(c)
+                    children_map[leaf] = child_list
+                else:
+                    if (c > leaf):
+                        children_map[leaf] = [c]
+                if(leaf < c):
+                    parent_map[c] = leaf
+
+    new_leaves = []
+    for leaf in leaves:
+        if (leaf in children_map and children_map[leaf] is not None):
+            new_leaves.extend(children_map[leaf])
+    if new_leaves is None:
+        new_leaves = []
+    leaves = new_leaves
+    leaves = list(set(leaves))
+    i = i +1
+
+recovery_nodes = []
+while(last_node!=-1):
+    recovery_nodes.append(last_node)
+    last_node = parent_map[last_node]
+
+recovery_nodes = list(reversed(recovery_nodes))
+print(recovery_nodes)
+
+
 
 
